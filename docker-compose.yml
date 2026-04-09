@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: wa-order-bot
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./auth_info_baileys:/app/auth_info_baileys
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Dashboard | WhatsApp Bot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <div onclick="switchTab('orders')" style="cursor: pointer;">
+                <h1 id="storeNameTitle">Order Dashboard</h1>
+                <p id="storeSubtitleText" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Monitoring pesanan masuk dari WhatsApp</p>
+                <div id="connectionStatus" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> Live System
+                </div>
+            </div>
+            <div style="display: flex; gap: 1.5rem; align-items: center;">
+                <button class="action-btn" onclick="switchTab('config')" title="Pengaturan & Laporan">
+                    <i class="fas fa-cog"></i> Konfigurasi
+                </button>
+                <button class="action-btn" onclick="logout()" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <section id="ordersTab" class="tab-content active">
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Pesanan</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Omzet Total</div>
+                    <div class="stat-value" id="totalRevenue">Rp 0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" id="pendingCount" style="color: var(--warning);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Diproses</div>
+                    <div class="stat-value" id="processingCount" style="color: var(--primary);">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Selesai</div>
+                    <div class="stat-value" id="completedCount" style="color: var(--success);">0</div>
+                </div>
+            </section>
+
+            <section class="orders-section">
+                <div class="table-header">
+                    <h2>Pesanan Terakhir</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <button class="action-btn" id="refreshBtn"><i class="fas fa-sync"></i> Refresh</button>
+                        <button class="action-btn" onclick="exportOrders()"><i class="fas fa-file-export"></i> Ekspor CSV</button>
+                        <input type="text" id="orderSearch" placeholder="Cari pesanan..." style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 0.5rem; color: #fff; width: 300px;">
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID ORDER</th>
+                            <th>CUSTOMER</th>
+                            <th>ITEM</th>
+                            <th>TOTAL</th>
+                            <th>ALAMAT</th>
+                            <th>STATUS</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </section>
+        </section>
+
+        <section id="configTab" class="tab-content">
+            <div class="config-container" style="display: flex; gap: 2rem;">
+                <aside class="config-sidebar" style="width: 250px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 1rem; padding: 1rem; height: fit-content;">
+                    <button class="sub-tab-btn active" onclick="switchSubTab('menu')"><i class="fas fa-utensils"></i> Menu Produk</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('settings')"><i class="fas fa-cog"></i> Profil Toko</button>
+                    <button class="sub-tab-btn" onclick="switchSubTab('reports')"><i class="fas fa-chart-line"></i> Laporan Sales</button>
+                    <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--glass-border);">
+                    <button class="sub-tab-btn" onclick="switchTab('orders')" style="color: var(--primary);">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                    </button>
+                </aside>
+
+                <main class="config-main" style="flex: 1;">
+                    <div id="sub_menuTab" class="sub-tab-content active">
+                        <div class="table-header">
+                            <h2>Manajemen Produk</h2>
+                            <button class="action-btn" onclick="openProductModal()"><i class="fas fa-plus"></i> Tambah Produk</button>
+                        </div>
+                        <div class="products-grid" id="productsGrid">
+                            <!-- Products will be populated here -->
+                        </div>
+                    </div>
+
+                    <div id="sub_settingsTab" class="sub-tab-content">
+                        <div class="table-header">
+                            <h2>Pengaturan Profil Toko</h2>
+                        </div>
+                        <div class="stat-card" style="padding: 2rem;">
+                            <form id="settingsForm">
+                                <div class="form-group">
+                                    <label>Nama Toko</label>
+                                    <input type="text" id="set_storeName" placeholder="Contoh: Kedai Mak Nyus">
+                                </div>
+                                <div class="form-group">
+                                    <label>Slogan / Deskripsi Dashboard</label>
+                                    <input type="text" id="set_storeSubtitle" placeholder="Monitoring pesanan masuk dari WhatsApp">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nomor WhatsApp Bot</label>
+                                    <input type="text" id="set_botNumber" placeholder="Contoh: 6285811095694">
+                                </div>
+                                <div class="form-group">
+                                    <label>Alamat Toko</label>
+                                    <textarea id="set_storeAddress" rows="2" placeholder="Alamat lengkap toko..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Link Google Maps</label>
+                                    <input type="text" id="set_storeMaps" placeholder="https://goo.gl/maps/...">
+                                </div>
+                                <div class="form-group">
+                                    <label>Pesan Penutup Bot (Footer)</label>
+                                    <textarea id="set_botFooter" rows="2" placeholder="Contoh: Terima kasih sudah berbelanja di toko kami!"></textarea>
+                                </div>
+                                <div style="margin-top: 2rem;">
+                                    <button type="submit" class="action-btn success" style="width: 100%;"><i class="fas fa-save"></i> Simpan Pengaturan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="sub_reportsTab" class="sub-tab-content">
+                        <div class="table-header">
+                            <h2>Laporan Penjualan (7 Hari Terakhir)</h2>
+                        </div>
+                        <div class="stat-card" style="padding: 2rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>TANGGAL</th>
+                                        <th>JUMLAH ORDER</th>
+                                        <th>TOTAL PENJUALAN</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Product -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <h2 id="productModalTitle">Tambah Produk Baru</h2>
+            <form id="productForm" style="margin-top: 1.5rem;">
+                <input type="hidden" id="productId">
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="prodName" required placeholder="Contoh: Nasi Goreng Special">
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="prodPrice" required placeholder="15000">
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <input type="text" id="prodCategory" placeholder="Contoh: Makanan, Minuman, Snack" list="categoryList">
+                    <datalist id="categoryList">
+                        <option value="Makanan">
+                        <option value="Minuman">
+                        <option value="Snack">
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea id="prodDesc" rows="3" placeholder="Deskripsi singkat produk..."></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="action-btn" onclick="closeProductModal()">Batal</button>
+                    <button type="submit" class="action-btn success">Simpan Produk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <!-- Modal Detail Order -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal">
+            <h2 id="modalTitle" style="margin-bottom: 1.5rem;">Detail Pesanan</h2>
+            <div id="modalContent" style="margin-bottom: 2rem;">
+                <!-- Content here -->
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button class="action-btn" onclick="closeModal()">Tutup</button>
+                <button class="action-btn" id="printBtn" style="color: var(--primary);"><i class="fas fa-print"></i> Cetak Struk</button>
+                <button class="action-btn success" id="completeBtn">Selesaikan Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
