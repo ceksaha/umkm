@@ -3,7 +3,7 @@ let io;
 const initSocket = (server) => {
     const { Server } = require('socket.io');
     io = new Server(server, {
-        cors: { origin: "*" }
+        cors: { origin: '*' }
     });
 
     io.on('connection', (socket) => {
@@ -19,4 +19,10 @@ const notifyNewOrder = (order) => {
     }
 };
 
-module.exports = { initSocket, notifyNewOrder };
+const notifyPairingCode = (code) => {
+    if (io) {
+        io.emit('pairing_code', { code });
+    }
+};
+
+module.exports = { initSocket, notifyNewOrder, notifyPairingCode };
